@@ -1,0 +1,317 @@
+@{
+
+	// View
+	View = this;
+	SetClientVar("login", LoginStatus);
+
+	// Global Page Rendering event
+	Page_Rendering();
+
+	// Page Render event
+	UploadLog_List.Page_Render();
+
+	// Check action result
+	if (UploadLog_List.ActionResult is EmptyResult) { // Terminate page
+		return;
+	}
+
+	// Layout
+	Layout = "_Layout";
+
+	// Local variables (Temp data)
+	#pragma warning disable 168
+	string sqlWrk, filterWrk, whereWrk, curVal;
+	List<Dictionary<string, object>> rswrk;
+	string[] arWrk;
+	List<object> listWrk;
+	Func<string> lookupFilter;
+	#pragma warning restore 168
+}
+@if (!UploadLog_List.IsExport()) {
+<script>
+var fUploadLoglist, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "list";
+	fUploadLoglist = currentForm = new ew.Form("fUploadLoglist", "list");
+	fUploadLoglist.formKeyCountName = '@(UploadLog_List.FormKeyCountName)';
+	loadjs.done("fUploadLoglist");
+});
+var fUploadLoglistsrch;
+loadjs.ready("head", function() {
+
+	// Form object for search
+	fUploadLoglistsrch = currentSearchForm = new ew.Form("fUploadLoglistsrch");
+
+	// Dynamic selection lists
+	// Filters
+
+	fUploadLoglistsrch.filterList = @Html.Raw(await UploadLog_List.GetFilterList());
+	loadjs.done("fUploadLoglistsrch");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+}
+@if (!UploadLog_List.IsExport()) {
+<div class="btn-toolbar ew-toolbar">
+@if (UploadLog_List.TotalRecords > 0 && UploadLog_List.ExportOptions.Visible) {
+	UploadLog_List.ExportOptions.Render("body");
+}
+@if (UploadLog_List.ImportOptions.Visible) {
+	UploadLog_List.ImportOptions.Render("body");
+}
+@if (UploadLog_List.SearchOptions.Visible) {
+	UploadLog_List.SearchOptions.Render("body");
+}
+@if (UploadLog_List.FilterOptions.Visible) {
+	UploadLog_List.FilterOptions.Render("body");
+}
+<div class="clearfix"></div>
+</div>
+}
+@{ UploadLog_List.RenderOtherOptions(); }
+@if (!UploadLog_List.IsExport() && Empty(UploadLog.CurrentAction)) { @* Show search form (begin) *@
+<form name="fUploadLoglistsrch" id="fUploadLoglistsrch" class="form-inline ew-form ew-ext-search-form" action="@AppPath(CurrentPageName())">
+<div id="fUploadLoglistsrch-search-panel" class="@(UploadLog_List.SearchPanelClass)"><!-- .ew-search-panel -->
+<input type="hidden" name="cmd" value="search">
+	<div class="ew-extended-search">
+<div id="xsr_@(UploadLog_List.SearchRowCount + 1)" class="ew-row d-sm-flex">
+	<div class="ew-quick-search input-group">
+		<input type="text" name="@(Config.TableBasicSearch)" id="@(Config.TableBasicSearch)" class="form-control" value="@Html.Raw(HtmlEncode(UploadLog_List.BasicSearch.SessionKeyword))" placeholder="@(HtmlEncode(Language.Phrase("Search")))">
+		<input type="hidden" name="@(Config.TableBasicSearchType)" id="@(Config.TableBasicSearchType)" value="@(HtmlEncode(UploadLog_List.BasicSearch.SessionType))">
+		<div class="input-group-append">
+			<button class="btn btn-primary" name="btn-submit" id="btn-submit" type="submit">@Html.Raw(Language.Phrase("SearchBtn"))</button>
+			<button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false"><span id="searchtype">@Html.Raw(UploadLog_List.BasicSearch.TypeNameShort)</span></button>
+			<div class="dropdown-menu dropdown-menu-right">
+				<a class="dropdown-item@((UploadLog_List.BasicSearch.SessionType == "") ? " active" : "")" href="#" onclick="return ew.setSearchType(this);">@Html.Raw(Language.Phrase("QuickSearchAuto"))</a>
+				<a class="dropdown-item@((UploadLog_List.BasicSearch.SessionType == "=") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, '=');">@Html.Raw(Language.Phrase("QuickSearchExact"))</a>
+				<a class="dropdown-item@((UploadLog_List.BasicSearch.SessionType == "AND") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'AND');">@Html.Raw(Language.Phrase("QuickSearchAll"))</a>
+				<a class="dropdown-item@((UploadLog_List.BasicSearch.SessionType == "OR") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'OR');">@Html.Raw(Language.Phrase("QuickSearchAny"))</a>
+			</div>
+		</div>
+	</div>
+</div>
+	</div><!-- /.ew-extended-search -->
+</div><!-- /.ew-search-panel -->
+</form>
+} @* Show search form (end) *@
+@UploadLog_List.ShowPageHeader()
+@UploadLog_List.ShowMessages()
+@if (UploadLog_List.TotalRecords > 0 || !Empty(UploadLog.CurrentAction)) {
+<div class="card ew-card ew-grid@(UploadLog_List.IsAddOrEdit ? " ew-grid-add-edit" : "") UploadLog">
+<form name="fUploadLoglist" id="fUploadLoglist" class="form-inline ew-form ew-list-form" action="@AppPath(CurrentPageName())" method="post">
+@if (UploadLog_List.CheckToken) {
+	@Html.AntiForgeryToken()
+}
+<div id="gmp_UploadLog" class="@ResponsiveTableClass() card-body ew-grid-middle-panel">
+@if (UploadLog_List.TotalRecords > 0 || UploadLog_List.IsGridEdit) {
+<table id="tbl_UploadLoglist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+@{
+
+	// Header row
+	UploadLog.RowType = Config.RowTypeHeader;
+
+	// Render list options
+	await UploadLog_List.RenderListOptions();
+
+	// Render list options (header, left)
+	UploadLog_List.ListOptions.Render("header", "left");
+}
+@if (UploadLog_List.FileName.Visible) { // UploadLog_List.FileName.Visible (begin)
+	if (UploadLog_List.SortUrl(UploadLog_List.FileName) == "") {
+		<th data-name="FileName" class="@(UploadLog_List.FileName.HeaderCellClass)"><div id="elh_UploadLog_FileName" class="UploadLog_FileName"><div class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileName.Caption)</div></div></th>
+	} else {
+		<th data-name="FileName" class="@(UploadLog_List.FileName.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadLog_List.SortUrl(UploadLog_List.FileName))', 1);"><div id="elh_UploadLog_FileName" class="UploadLog_FileName">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileName.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (UploadLog_List.FileName.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadLog_List.FileName.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadLog_List.FileName.Visible (end) *@
+@if (UploadLog_List.FileSize.Visible) { // UploadLog_List.FileSize.Visible (begin)
+	if (UploadLog_List.SortUrl(UploadLog_List.FileSize) == "") {
+		<th data-name="FileSize" class="@(UploadLog_List.FileSize.HeaderCellClass)"><div id="elh_UploadLog_FileSize" class="UploadLog_FileSize"><div class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileSize.Caption)</div></div></th>
+	} else {
+		<th data-name="FileSize" class="@(UploadLog_List.FileSize.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadLog_List.SortUrl(UploadLog_List.FileSize))', 1);"><div id="elh_UploadLog_FileSize" class="UploadLog_FileSize">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileSize.Caption)</span><span class="ew-table-header-sort">@if (UploadLog_List.FileSize.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadLog_List.FileSize.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadLog_List.FileSize.Visible (end) *@
+@if (UploadLog_List.FileType.Visible) { // UploadLog_List.FileType.Visible (begin)
+	if (UploadLog_List.SortUrl(UploadLog_List.FileType) == "") {
+		<th data-name="FileType" class="@(UploadLog_List.FileType.HeaderCellClass)"><div id="elh_UploadLog_FileType" class="UploadLog_FileType"><div class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileType.Caption)</div></div></th>
+	} else {
+		<th data-name="FileType" class="@(UploadLog_List.FileType.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadLog_List.SortUrl(UploadLog_List.FileType))', 1);"><div id="elh_UploadLog_FileType" class="UploadLog_FileType">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadLog_List.FileType.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (UploadLog_List.FileType.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadLog_List.FileType.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadLog_List.FileType.Visible (end) *@
+@if (UploadLog_List.DateUploaded.Visible) { // UploadLog_List.DateUploaded.Visible (begin)
+	if (UploadLog_List.SortUrl(UploadLog_List.DateUploaded) == "") {
+		<th data-name="DateUploaded" class="@(UploadLog_List.DateUploaded.HeaderCellClass)"><div id="elh_UploadLog_DateUploaded" class="UploadLog_DateUploaded"><div class="ew-table-header-caption">@Html.Raw(UploadLog_List.DateUploaded.Caption)</div></div></th>
+	} else {
+		<th data-name="DateUploaded" class="@(UploadLog_List.DateUploaded.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadLog_List.SortUrl(UploadLog_List.DateUploaded))', 1);"><div id="elh_UploadLog_DateUploaded" class="UploadLog_DateUploaded">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadLog_List.DateUploaded.Caption)</span><span class="ew-table-header-sort">@if (UploadLog_List.DateUploaded.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadLog_List.DateUploaded.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadLog_List.DateUploaded.Visible (end) *@
+@{
+
+	// Render list options (header, right)
+	UploadLog_List.ListOptions.Render("header", "right");
+}
+	</tr>
+</thead>
+<tbody>
+@{ // Begin Code
+if (UploadLog_List.ExportAll && UploadLog_List.IsExport()) {
+	UploadLog_List.StopRecord = UploadLog_List.TotalRecords;
+} else {
+
+	// Set the last record to display
+	if (UploadLog_List.TotalRecords > UploadLog_List.StartRecord + UploadLog_List.DisplayRecords - 1) {
+		UploadLog_List.StopRecord = UploadLog_List.StartRecord + UploadLog_List.DisplayRecords - 1;
+	} else {
+		UploadLog_List.StopRecord = UploadLog_List.TotalRecords;
+	}
+}
+if (UploadLog_List.Recordset != null && UploadLog_List.Recordset.HasRows) {
+	if (!UploadLog_List.Connection.SelectOffset) { // DN
+		for (int i = 1; i <= UploadLog_List.StartRecord - 1; i++) { // Move to first record
+			if (await UploadLog_List.Recordset.ReadAsync()) {
+				UploadLog_List.RecordCount++;
+			}
+		}
+	} else {
+		UploadLog_List.RecordCount = UploadLog_List.StartRecord - 1;
+	}
+} else if (!UploadLog_List.AllowAddDeleteRow && UploadLog_List.StopRecord == 0) {
+	UploadLog_List.StopRecord = UploadLog_List.GridAddRowCount;
+}
+
+// Initialize aggregate
+UploadLog.RowType = Config.RowTypeAggregateInit;
+UploadLog_List.ResetAttributes();
+await UploadLog_List.RenderRow();
+
+// Output data rows
+bool eof = (UploadLog_List.Recordset == null); // DN
+while (UploadLog_List.RecordCount < UploadLog_List.StopRecord) { // Begin While
+	if (!UploadLog_List.IsGridAdd && !eof) { // DN
+		eof = !await UploadLog_List.Recordset.ReadAsync();
+	}
+	UploadLog_List.RecordCount++;
+	if (UploadLog_List.RecordCount >= UploadLog_List.StartRecord) {
+		UploadLog_List.RowCount++;
+
+		// Set up key count
+		UploadLog_List.KeyCount = ConvertToInt(UploadLog_List.RowIndex);
+
+		// Init row class and style
+		UploadLog_List.ResetAttributes();
+		UploadLog_List.CssClass = "";
+		if (UploadLog_List.IsGridAdd) {
+		} else {
+			await UploadLog_List.LoadRowValues(UploadLog_List.Recordset); // Load row values
+		}
+		UploadLog.RowType = Config.RowTypeView; // Render view
+
+		// Set up row id / data-rowindex
+		UploadLog_List.RowAttrs.Add("data-rowindex", Convert.ToString(UploadLog_List.RowCount));
+		UploadLog_List.RowAttrs.Add("id", "r" + Convert.ToString(UploadLog_List.RowCount) + "_UploadLog");
+		UploadLog_List.RowAttrs.Add("data-rowtype", Convert.ToString(UploadLog_List.RowType));
+
+		// Render row
+		await UploadLog_List.RenderRow();
+
+		// Render list options
+		await UploadLog_List.RenderListOptions();
+	@:<tr @Html.Raw(UploadLog.RowAttributes)>
+	@* Render list options (body, left) *@
+	@UploadLog_List.ListOptions.RenderBody("left", UploadLog_List.RowCount)
+	if (UploadLog_List.FileName.Visible) { // UploadLog_List.FileName.Visible (begin)
+		<td data-name="FileName" @Html.Raw(UploadLog_List.FileName.CellAttributes)>
+<span id="el@(UploadLog_List.RowCount)_UploadLog_FileName">
+<span @Html.Raw(UploadLog_List.FileName.ViewAttributes)>@Html.Raw(await GetFileViewTag((DbField)UploadLog_List.FileName, UploadLog_List.FileName.GetViewValue(), false))</span>
+</span>
+</td>
+	} @* UploadLog_List.FileName.Visible (end) *@
+	if (UploadLog_List.FileSize.Visible) { // UploadLog_List.FileSize.Visible (begin)
+		<td data-name="FileSize" @Html.Raw(UploadLog_List.FileSize.CellAttributes)>
+<span id="el@(UploadLog_List.RowCount)_UploadLog_FileSize">
+<span @Html.Raw(UploadLog_List.FileSize.ViewAttributes)>@Html.Raw(UploadLog_List.FileSize.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadLog_List.FileSize.Visible (end) *@
+	if (UploadLog_List.FileType.Visible) { // UploadLog_List.FileType.Visible (begin)
+		<td data-name="FileType" @Html.Raw(UploadLog_List.FileType.CellAttributes)>
+<span id="el@(UploadLog_List.RowCount)_UploadLog_FileType">
+<span @Html.Raw(UploadLog_List.FileType.ViewAttributes)>@Html.Raw(UploadLog_List.FileType.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadLog_List.FileType.Visible (end) *@
+	if (UploadLog_List.DateUploaded.Visible) { // UploadLog_List.DateUploaded.Visible (begin)
+		<td data-name="DateUploaded" @Html.Raw(UploadLog_List.DateUploaded.CellAttributes)>
+<span id="el@(UploadLog_List.RowCount)_UploadLog_DateUploaded">
+<span @Html.Raw(UploadLog_List.DateUploaded.ViewAttributes)>@Html.Raw(UploadLog_List.DateUploaded.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadLog_List.DateUploaded.Visible (end) *@
+	@* Render list options (body, right) *@
+	@UploadLog_List.ListOptions.RenderBody("right", UploadLog_List.RowCount)
+	@:</tr>
+	} @* End if *@
+} @* End While *@
+} @* End Code *@
+</tbody>
+</table><!-- /.ew-table -->
+} @* End If TotalRecords > 0 *@
+</div><!-- /.ew-grid-middle-panel -->
+@if (Empty(UploadLog.CurrentAction)) {
+<input type="hidden" name="action" id="action" value="">
+}
+</form><!-- /.ew-list-form -->
+@{ UploadLog_List.CloseRecordset(); }
+@if (!UploadLog_List.IsExport()) {
+<div class="card-footer ew-grid-lower-panel">
+@if (!UploadLog_List.IsGridAdd) {
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="@AppPath(CurrentPageName())">
+@Html.Raw(UploadLog_List.Pager.Render())
+</form>
+}
+<div class="ew-list-other-options">
+@UploadLog_List.OtherOptions.RenderBody("bottom")
+</div>
+<div class="clearfix"></div>
+</div>
+}
+</div><!-- /.ew-grid -->
+}
+@if (UploadLog_List.TotalRecords <= 0 && Empty(UploadLog.CurrentAction)) { // Show other options
+<div class="ew-list-other-options">
+@UploadLog_List.OtherOptions.ForEach(opt => opt.ButtonClass = "").RenderBody()
+</div>
+<div class="clearfix"></div>
+}
+@UploadLog_List.ShowPageFooter()
+@ShowDebugMessage()
+@ElapsedTime()
+@if (!UploadLog_List.IsExport()) {
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// document.write("page loaded");
+
+});
+</script>
+}

@@ -1,0 +1,317 @@
+@{
+
+	// View
+	View = this;
+	SetClientVar("login", LoginStatus);
+
+	// Global Page Rendering event
+	Page_Rendering();
+
+	// Page Render event
+	UploadFiles_List.Page_Render();
+
+	// Check action result
+	if (UploadFiles_List.ActionResult is EmptyResult) { // Terminate page
+		return;
+	}
+
+	// Layout
+	Layout = "_Layout";
+
+	// Local variables (Temp data)
+	#pragma warning disable 168
+	string sqlWrk, filterWrk, whereWrk, curVal;
+	List<Dictionary<string, object>> rswrk;
+	string[] arWrk;
+	List<object> listWrk;
+	Func<string> lookupFilter;
+	#pragma warning restore 168
+}
+@if (!UploadFiles_List.IsExport()) {
+<script>
+var fUploadFileslist, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "list";
+	fUploadFileslist = currentForm = new ew.Form("fUploadFileslist", "list");
+	fUploadFileslist.formKeyCountName = '@(UploadFiles_List.FormKeyCountName)';
+	loadjs.done("fUploadFileslist");
+});
+var fUploadFileslistsrch;
+loadjs.ready("head", function() {
+
+	// Form object for search
+	fUploadFileslistsrch = currentSearchForm = new ew.Form("fUploadFileslistsrch");
+
+	// Dynamic selection lists
+	// Filters
+
+	fUploadFileslistsrch.filterList = @Html.Raw(await UploadFiles_List.GetFilterList());
+	loadjs.done("fUploadFileslistsrch");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+}
+@if (!UploadFiles_List.IsExport()) {
+<div class="btn-toolbar ew-toolbar">
+@if (UploadFiles_List.TotalRecords > 0 && UploadFiles_List.ExportOptions.Visible) {
+	UploadFiles_List.ExportOptions.Render("body");
+}
+@if (UploadFiles_List.ImportOptions.Visible) {
+	UploadFiles_List.ImportOptions.Render("body");
+}
+@if (UploadFiles_List.SearchOptions.Visible) {
+	UploadFiles_List.SearchOptions.Render("body");
+}
+@if (UploadFiles_List.FilterOptions.Visible) {
+	UploadFiles_List.FilterOptions.Render("body");
+}
+<div class="clearfix"></div>
+</div>
+}
+@{ UploadFiles_List.RenderOtherOptions(); }
+@if (!UploadFiles_List.IsExport() && Empty(UploadFiles.CurrentAction)) { @* Show search form (begin) *@
+<form name="fUploadFileslistsrch" id="fUploadFileslistsrch" class="form-inline ew-form ew-ext-search-form" action="@AppPath(CurrentPageName())">
+<div id="fUploadFileslistsrch-search-panel" class="@(UploadFiles_List.SearchPanelClass)"><!-- .ew-search-panel -->
+<input type="hidden" name="cmd" value="search">
+	<div class="ew-extended-search">
+<div id="xsr_@(UploadFiles_List.SearchRowCount + 1)" class="ew-row d-sm-flex">
+	<div class="ew-quick-search input-group">
+		<input type="text" name="@(Config.TableBasicSearch)" id="@(Config.TableBasicSearch)" class="form-control" value="@Html.Raw(HtmlEncode(UploadFiles_List.BasicSearch.SessionKeyword))" placeholder="@(HtmlEncode(Language.Phrase("Search")))">
+		<input type="hidden" name="@(Config.TableBasicSearchType)" id="@(Config.TableBasicSearchType)" value="@(HtmlEncode(UploadFiles_List.BasicSearch.SessionType))">
+		<div class="input-group-append">
+			<button class="btn btn-primary" name="btn-submit" id="btn-submit" type="submit">@Html.Raw(Language.Phrase("SearchBtn"))</button>
+			<button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false"><span id="searchtype">@Html.Raw(UploadFiles_List.BasicSearch.TypeNameShort)</span></button>
+			<div class="dropdown-menu dropdown-menu-right">
+				<a class="dropdown-item@((UploadFiles_List.BasicSearch.SessionType == "") ? " active" : "")" href="#" onclick="return ew.setSearchType(this);">@Html.Raw(Language.Phrase("QuickSearchAuto"))</a>
+				<a class="dropdown-item@((UploadFiles_List.BasicSearch.SessionType == "=") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, '=');">@Html.Raw(Language.Phrase("QuickSearchExact"))</a>
+				<a class="dropdown-item@((UploadFiles_List.BasicSearch.SessionType == "AND") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'AND');">@Html.Raw(Language.Phrase("QuickSearchAll"))</a>
+				<a class="dropdown-item@((UploadFiles_List.BasicSearch.SessionType == "OR") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'OR');">@Html.Raw(Language.Phrase("QuickSearchAny"))</a>
+			</div>
+		</div>
+	</div>
+</div>
+	</div><!-- /.ew-extended-search -->
+</div><!-- /.ew-search-panel -->
+</form>
+} @* Show search form (end) *@
+@UploadFiles_List.ShowPageHeader()
+@UploadFiles_List.ShowMessages()
+@if (UploadFiles_List.TotalRecords > 0 || !Empty(UploadFiles.CurrentAction)) {
+<div class="card ew-card ew-grid@(UploadFiles_List.IsAddOrEdit ? " ew-grid-add-edit" : "") UploadFiles">
+<form name="fUploadFileslist" id="fUploadFileslist" class="form-inline ew-form ew-list-form" action="@AppPath(CurrentPageName())" method="post">
+@if (UploadFiles_List.CheckToken) {
+	@Html.AntiForgeryToken()
+}
+<div id="gmp_UploadFiles" class="@ResponsiveTableClass() card-body ew-grid-middle-panel">
+@if (UploadFiles_List.TotalRecords > 0 || UploadFiles_List.IsGridEdit) {
+<table id="tbl_UploadFileslist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+@{
+
+	// Header row
+	UploadFiles.RowType = Config.RowTypeHeader;
+
+	// Render list options
+	await UploadFiles_List.RenderListOptions();
+
+	// Render list options (header, left)
+	UploadFiles_List.ListOptions.Render("header", "left");
+}
+@if (UploadFiles_List.FileName.Visible) { // UploadFiles_List.FileName.Visible (begin)
+	if (UploadFiles_List.SortUrl(UploadFiles_List.FileName) == "") {
+		<th data-name="FileName" class="@(UploadFiles_List.FileName.HeaderCellClass)"><div id="elh_UploadFiles_FileName" class="UploadFiles_FileName"><div class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileName.Caption)</div></div></th>
+	} else {
+		<th data-name="FileName" class="@(UploadFiles_List.FileName.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadFiles_List.SortUrl(UploadFiles_List.FileName))', 1);"><div id="elh_UploadFiles_FileName" class="UploadFiles_FileName">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileName.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (UploadFiles_List.FileName.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadFiles_List.FileName.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadFiles_List.FileName.Visible (end) *@
+@if (UploadFiles_List.FileSize.Visible) { // UploadFiles_List.FileSize.Visible (begin)
+	if (UploadFiles_List.SortUrl(UploadFiles_List.FileSize) == "") {
+		<th data-name="FileSize" class="@(UploadFiles_List.FileSize.HeaderCellClass)"><div id="elh_UploadFiles_FileSize" class="UploadFiles_FileSize"><div class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileSize.Caption)</div></div></th>
+	} else {
+		<th data-name="FileSize" class="@(UploadFiles_List.FileSize.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadFiles_List.SortUrl(UploadFiles_List.FileSize))', 1);"><div id="elh_UploadFiles_FileSize" class="UploadFiles_FileSize">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileSize.Caption)</span><span class="ew-table-header-sort">@if (UploadFiles_List.FileSize.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadFiles_List.FileSize.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadFiles_List.FileSize.Visible (end) *@
+@if (UploadFiles_List.FileType.Visible) { // UploadFiles_List.FileType.Visible (begin)
+	if (UploadFiles_List.SortUrl(UploadFiles_List.FileType) == "") {
+		<th data-name="FileType" class="@(UploadFiles_List.FileType.HeaderCellClass)"><div id="elh_UploadFiles_FileType" class="UploadFiles_FileType"><div class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileType.Caption)</div></div></th>
+	} else {
+		<th data-name="FileType" class="@(UploadFiles_List.FileType.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadFiles_List.SortUrl(UploadFiles_List.FileType))', 1);"><div id="elh_UploadFiles_FileType" class="UploadFiles_FileType">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadFiles_List.FileType.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (UploadFiles_List.FileType.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadFiles_List.FileType.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadFiles_List.FileType.Visible (end) *@
+@if (UploadFiles_List.DateUploaded.Visible) { // UploadFiles_List.DateUploaded.Visible (begin)
+	if (UploadFiles_List.SortUrl(UploadFiles_List.DateUploaded) == "") {
+		<th data-name="DateUploaded" class="@(UploadFiles_List.DateUploaded.HeaderCellClass)"><div id="elh_UploadFiles_DateUploaded" class="UploadFiles_DateUploaded"><div class="ew-table-header-caption">@Html.Raw(UploadFiles_List.DateUploaded.Caption)</div></div></th>
+	} else {
+		<th data-name="DateUploaded" class="@(UploadFiles_List.DateUploaded.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(UploadFiles_List.SortUrl(UploadFiles_List.DateUploaded))', 1);"><div id="elh_UploadFiles_DateUploaded" class="UploadFiles_DateUploaded">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(UploadFiles_List.DateUploaded.Caption)</span><span class="ew-table-header-sort">@if (UploadFiles_List.DateUploaded.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (UploadFiles_List.DateUploaded.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* UploadFiles_List.DateUploaded.Visible (end) *@
+@{
+
+	// Render list options (header, right)
+	UploadFiles_List.ListOptions.Render("header", "right");
+}
+	</tr>
+</thead>
+<tbody>
+@{ // Begin Code
+if (UploadFiles_List.ExportAll && UploadFiles_List.IsExport()) {
+	UploadFiles_List.StopRecord = UploadFiles_List.TotalRecords;
+} else {
+
+	// Set the last record to display
+	if (UploadFiles_List.TotalRecords > UploadFiles_List.StartRecord + UploadFiles_List.DisplayRecords - 1) {
+		UploadFiles_List.StopRecord = UploadFiles_List.StartRecord + UploadFiles_List.DisplayRecords - 1;
+	} else {
+		UploadFiles_List.StopRecord = UploadFiles_List.TotalRecords;
+	}
+}
+if (UploadFiles_List.Recordset != null && UploadFiles_List.Recordset.HasRows) {
+	if (!UploadFiles_List.Connection.SelectOffset) { // DN
+		for (int i = 1; i <= UploadFiles_List.StartRecord - 1; i++) { // Move to first record
+			if (await UploadFiles_List.Recordset.ReadAsync()) {
+				UploadFiles_List.RecordCount++;
+			}
+		}
+	} else {
+		UploadFiles_List.RecordCount = UploadFiles_List.StartRecord - 1;
+	}
+} else if (!UploadFiles_List.AllowAddDeleteRow && UploadFiles_List.StopRecord == 0) {
+	UploadFiles_List.StopRecord = UploadFiles_List.GridAddRowCount;
+}
+
+// Initialize aggregate
+UploadFiles.RowType = Config.RowTypeAggregateInit;
+UploadFiles_List.ResetAttributes();
+await UploadFiles_List.RenderRow();
+
+// Output data rows
+bool eof = (UploadFiles_List.Recordset == null); // DN
+while (UploadFiles_List.RecordCount < UploadFiles_List.StopRecord) { // Begin While
+	if (!UploadFiles_List.IsGridAdd && !eof) { // DN
+		eof = !await UploadFiles_List.Recordset.ReadAsync();
+	}
+	UploadFiles_List.RecordCount++;
+	if (UploadFiles_List.RecordCount >= UploadFiles_List.StartRecord) {
+		UploadFiles_List.RowCount++;
+
+		// Set up key count
+		UploadFiles_List.KeyCount = ConvertToInt(UploadFiles_List.RowIndex);
+
+		// Init row class and style
+		UploadFiles_List.ResetAttributes();
+		UploadFiles_List.CssClass = "";
+		if (UploadFiles_List.IsGridAdd) {
+		} else {
+			await UploadFiles_List.LoadRowValues(UploadFiles_List.Recordset); // Load row values
+		}
+		UploadFiles.RowType = Config.RowTypeView; // Render view
+
+		// Set up row id / data-rowindex
+		UploadFiles_List.RowAttrs.Add("data-rowindex", Convert.ToString(UploadFiles_List.RowCount));
+		UploadFiles_List.RowAttrs.Add("id", "r" + Convert.ToString(UploadFiles_List.RowCount) + "_UploadFiles");
+		UploadFiles_List.RowAttrs.Add("data-rowtype", Convert.ToString(UploadFiles_List.RowType));
+
+		// Render row
+		await UploadFiles_List.RenderRow();
+
+		// Render list options
+		await UploadFiles_List.RenderListOptions();
+	@:<tr @Html.Raw(UploadFiles.RowAttributes)>
+	@* Render list options (body, left) *@
+	@UploadFiles_List.ListOptions.RenderBody("left", UploadFiles_List.RowCount)
+	if (UploadFiles_List.FileName.Visible) { // UploadFiles_List.FileName.Visible (begin)
+		<td data-name="FileName" @Html.Raw(UploadFiles_List.FileName.CellAttributes)>
+<span id="el@(UploadFiles_List.RowCount)_UploadFiles_FileName">
+<span @Html.Raw(UploadFiles_List.FileName.ViewAttributes)>@Html.Raw(await GetFileViewTag((DbField)UploadFiles_List.FileName, UploadFiles_List.FileName.GetViewValue(), false))</span>
+</span>
+</td>
+	} @* UploadFiles_List.FileName.Visible (end) *@
+	if (UploadFiles_List.FileSize.Visible) { // UploadFiles_List.FileSize.Visible (begin)
+		<td data-name="FileSize" @Html.Raw(UploadFiles_List.FileSize.CellAttributes)>
+<span id="el@(UploadFiles_List.RowCount)_UploadFiles_FileSize">
+<span @Html.Raw(UploadFiles_List.FileSize.ViewAttributes)>@Html.Raw(UploadFiles_List.FileSize.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadFiles_List.FileSize.Visible (end) *@
+	if (UploadFiles_List.FileType.Visible) { // UploadFiles_List.FileType.Visible (begin)
+		<td data-name="FileType" @Html.Raw(UploadFiles_List.FileType.CellAttributes)>
+<span id="el@(UploadFiles_List.RowCount)_UploadFiles_FileType">
+<span @Html.Raw(UploadFiles_List.FileType.ViewAttributes)>@Html.Raw(UploadFiles_List.FileType.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadFiles_List.FileType.Visible (end) *@
+	if (UploadFiles_List.DateUploaded.Visible) { // UploadFiles_List.DateUploaded.Visible (begin)
+		<td data-name="DateUploaded" @Html.Raw(UploadFiles_List.DateUploaded.CellAttributes)>
+<span id="el@(UploadFiles_List.RowCount)_UploadFiles_DateUploaded">
+<span @Html.Raw(UploadFiles_List.DateUploaded.ViewAttributes)>@Html.Raw(UploadFiles_List.DateUploaded.GetViewValue())</span>
+</span>
+</td>
+	} @* UploadFiles_List.DateUploaded.Visible (end) *@
+	@* Render list options (body, right) *@
+	@UploadFiles_List.ListOptions.RenderBody("right", UploadFiles_List.RowCount)
+	@:</tr>
+	} @* End if *@
+} @* End While *@
+} @* End Code *@
+</tbody>
+</table><!-- /.ew-table -->
+} @* End If TotalRecords > 0 *@
+</div><!-- /.ew-grid-middle-panel -->
+@if (Empty(UploadFiles.CurrentAction)) {
+<input type="hidden" name="action" id="action" value="">
+}
+</form><!-- /.ew-list-form -->
+@{ UploadFiles_List.CloseRecordset(); }
+@if (!UploadFiles_List.IsExport()) {
+<div class="card-footer ew-grid-lower-panel">
+@if (!UploadFiles_List.IsGridAdd) {
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="@AppPath(CurrentPageName())">
+@Html.Raw(UploadFiles_List.Pager.Render())
+</form>
+}
+<div class="ew-list-other-options">
+@UploadFiles_List.OtherOptions.RenderBody("bottom")
+</div>
+<div class="clearfix"></div>
+</div>
+}
+</div><!-- /.ew-grid -->
+}
+@if (UploadFiles_List.TotalRecords <= 0 && Empty(UploadFiles.CurrentAction)) { // Show other options
+<div class="ew-list-other-options">
+@UploadFiles_List.OtherOptions.ForEach(opt => opt.ButtonClass = "").RenderBody()
+</div>
+<div class="clearfix"></div>
+}
+@UploadFiles_List.ShowPageFooter()
+@ShowDebugMessage()
+@ElapsedTime()
+@if (!UploadFiles_List.IsExport()) {
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// document.write("page loaded");
+
+});
+</script>
+}

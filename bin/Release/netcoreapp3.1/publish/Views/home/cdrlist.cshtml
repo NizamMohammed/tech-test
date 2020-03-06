@@ -1,0 +1,31 @@
+<html>
+<body>
+								<h1>CDR Api site is up and running!</h1>
+
+<h4>Use the date query strings as in dd-MM-yyy and slash '/' for seperating parameters.<br> 
+(to get the date range, use the format dd-MM-yyyy / dd-MM-yyyy without spaces). caller_id is optional and it can be used to filter any caller_id pattern. <br>
+ For example http://{host}/api/list/01-08-2016/02-08-2016/44138 list all calls for the period for the caller_id(s) starting with the number 44138.<br><br>
+
+
+	Get a list of calls of a CLI for a period (Change the date range and caller_id '01-08-2016/01-08-2016/441386555335' as required): <br
+
+	http://{host}/api/list/01-08-2016/01-08-2016/441386555335 <br><br>
+
+	Get Top 10 high duration calls for a period (Change number of calls and date range '10/01-08-2016/01-08-2016/441386555335' as required): <br>
+
+	http://{host}/api/topdur/10/01-08-2016/01-08-2016/441386555335 <br><br>
+
+	Get Top 10 high cost calls for a period (Change number of calls and date range '10/01-08-2016/01-08-2016/441386555335' as required): <br>
+
+	http://{host}/api/topcost/10/01-08-2016/01-08-2016/441386555335 <br><br>
+
+	Get average cost per day for a period  (Change the date range 01-08-2016/01-08-2016/441386555335 as required): <br>
+
+	http://{host}/api/avgcost/01-08-2016/01-08-2016/441386555335 <br><br>
+
+	Get average calls per day for a period  (Change the date range 01-08-2016/01-08-2016/441386555335 as required): <br>
+
+	http://{host}/api/avgcall/01-08-2016/01-08-2016/441386555335 <br><br>
+</h4>
+</body>
+</html>

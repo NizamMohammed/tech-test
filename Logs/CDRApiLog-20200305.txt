@@ -1,0 +1,139 @@
+2020-03-05T10:02:44.6840051+00:00 80000035-0003-fd00-b63f-84710c7967bb [ERR] Incorrect syntax near the keyword 'table'.   at Microsoft.Data.SqlClient.SqlConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.SqlInternalConnection.OnError(SqlException exception, Boolean breakConnection, Action`1 wrapCloseInAction)
+   at Microsoft.Data.SqlClient.TdsParser.ThrowExceptionAndWarning(TdsParserStateObject stateObj, Boolean callerHasConnectionLock, Boolean asyncClose)
+   at Microsoft.Data.SqlClient.TdsParser.TryRun(RunBehavior runBehavior, SqlCommand cmdHandler, SqlDataReader dataStream, BulkCopySimpleResultSet bulkCopyHandler, TdsParserStateObject stateObj, Boolean& dataReady)
+   at Microsoft.Data.SqlClient.SqlCommand.RunExecuteNonQueryTds(String methodName, Boolean isAsync, Int32 timeout, Boolean asyncWrite)
+   at Microsoft.Data.SqlClient.SqlCommand.InternalExecuteNonQuery(TaskCompletionSource`1 completion, Boolean sendToPipe, Int32 timeout, Boolean& usedCache, Boolean asyncWrite, Boolean inRetry, String methodName)
+   at Microsoft.Data.SqlClient.SqlCommand.ExecuteNonQuery()
+   at Dapper.SqlMapper.ExecuteCommand(IDbConnection cnn, CommandDefinition& command, Action`2 paramReader) in C:\projects\dapper\Dapper\SqlMapper.cs:line 2797
+   at Dapper.SqlMapper.ExecuteImpl(IDbConnection cnn, CommandDefinition& command) in C:\projects\dapper\Dapper\SqlMapper.cs:line 568
+   at Dapper.SqlMapper.Execute(IDbConnection cnn, String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in C:\projects\dapper\Dapper\SqlMapper.cs:line 441
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteNonQuery(String sql, Object param, IDbTransaction transaction, Nullable`1 commandTimeout, Nullable`1 commandType) in C:\Source\Aurora\Models\aspnetfn.cs:line 6691
+   at CallSite.Target(Closure , CallSite , Object , String )
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute2[T0,T1,TRet](CallSite site, T0 arg0, T1 arg1)
+   at CDRApi.Models.Aurora.Execute(String sql, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14310
+   at CDRApi.Controllers.HomeController.Delete() in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 335 (98e1ded0)
+2020-03-05T10:20:43.4617216+00:00 80000014-0003-fc00-b63f-84710c7967bb [ERR] Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJson(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6777
+   at CDRApi.Models.Aurora.ExecuteJson(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14436
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 203 (957f5e4e)
+2020-03-05T14:25:45.9523893+00:00 80000035-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (08c2858c)
+2020-03-05T14:26:23.1248127+00:00 80000036-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (08c2858c)
+2020-03-05T14:27:42.6873672+00:00 80000038-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (08c2858c)
+2020-03-05T14:29:39.8150227+00:00 8000003a-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at System.Threading.Tasks.Task`1.get_Result()
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (08c2858c)
+2020-03-05T14:42:10.8505338+00:00 8000003c-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (31c89f8b)
+2020-03-05T14:43:11.0547617+00:00 8000003d-0000-ea00-b63f-84710c7967bb [ERR] One or more errors occurred. (Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.)   at System.Threading.Tasks.Task.ThrowIfExceptional(Boolean includeTaskCanceledExceptions)
+   at System.Threading.Tasks.Task`1.GetResultCore(Boolean waitCompletionNotification)
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 191 (31c89f8b)
+2020-03-05T15:17:22.9611221+00:00 80000029-0003-fc00-b63f-84710c7967bb [ERR] Exception of type 'System.OutOfMemoryException' was thrown.   at System.Text.StringBuilder.ToString()
+   at System.IO.StringWriter.ToString()
+   at Newtonsoft.Json.JsonConvert.SerializeObjectInternal(Object value, Type type, JsonSerializer jsonSerializer)
+   at Newtonsoft.Json.JsonConvert.SerializeObject(Object value, Type type, JsonSerializerSettings settings)
+   at Newtonsoft.Json.JsonConvert.SerializeObject(Object value)
+   at CDRApi.Models.Aurora.ConvertToJson(Object value) in C:\Source\Aurora\Models\aspnetfn.cs:line 13322
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6762
+   at CallSite.Target(Closure , CallSite , Object )
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 190 (85feb6a2)
+2020-03-05T16:11:53.5144748+00:00 8000002d-0003-fc00-b63f-84710c7967bb [ERR] Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 189 (00b6b572)
+2020-03-05T16:12:31.5944569+00:00 8000002e-0003-fc00-b63f-84710c7967bb [ERR] Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 189 (4d9705e0)
+2020-03-05T16:13:20.4973358+00:00 8000002f-0003-fc00-b63f-84710c7967bb [ERR] Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 189 (4d9705e0)
+2020-03-05T16:40:02.2339369+00:00 80000035-0000-ed00-b63f-84710c7967bb [ERR] Execution Timeout Expired.  The timeout period elapsed prior to completion of the operation or the server is not responding.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 188 (24553361)
+2020-03-05T17:02:36.1278802+00:00 80000019-0002-fe00-b63f-84710c7967bb [ERR] Invalid column name 'costcurrency'.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.Tasks.Task.<>c.<.cctor>b__274_0(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.CallList(String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 188 (ab40ed8f)
+2020-03-05T17:18:13.5018957+00:00 80000037-0003-ff00-b63f-84710c7967bb [ERR] Ambiguous column name 'cost'.   at Microsoft.Data.SqlClient.SqlCommand.<>c.<ExecuteDbDataReaderAsync>b__164_0(Task`1 result)
+   at System.Threading.Tasks.ContinuationResultTaskFromResultTask`2.InnerInvoke()
+   at System.Threading.Tasks.Task.<>c.<.cctor>b__274_0(Object obj)
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Threading.ExecutionContext.RunInternal(ExecutionContext executionContext, ContextCallback callback, Object state)
+   at System.Threading.Tasks.Task.ExecuteWithThreadLocal(Task& currentTaskSlot, Thread threadPoolThread)
+--- End of stack trace from previous location where exception was thrown ---
+   at Dapper.SqlMapper.QueryAsync[T](IDbConnection cnn, Type effectiveType, CommandDefinition command) in C:\projects\dapper\Dapper\SqlMapper.Async.cs:line 419
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.GetRowsAsync(String sql, Boolean main) in C:\Source\Aurora\Models\aspnetfn.cs:line 7005
+   at CDRApi.Models.Aurora.DatabaseConnectionBase`4.ExecuteJsonAsync(String sql, Object options) in C:\Source\Aurora\Models\aspnetfn.cs:line 6758
+   at CallSite.Target(Closure , CallSite , Object )
+   at System.Dynamic.UpdateDelegates.UpdateAndExecute1[T0,TRet](CallSite site, T0 arg0)
+   at CDRApi.Models.Aurora.ExecuteJsonAsync(String sql, Object options, String dbid) in C:\Source\Aurora\Models\aspnetfn.cs:line 14451
+   at CDRApi.Controllers.HomeController.TopCost(Double dblNumberOfcalls, String strStartDate, String strEndDate, String strPhonenumber) in C:\Source\Aurora\Controllers\cdrapicontroller.cs:line 127 (c8685ce1)

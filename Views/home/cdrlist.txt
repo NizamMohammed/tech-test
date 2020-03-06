@@ -1,0 +1,397 @@
+@{
+
+	// View
+	View = this;
+	SetClientVar("login", LoginStatus);
+
+	// Global Page Rendering event
+	Page_Rendering();
+
+	// Page Render event
+	CDR_List.Page_Render();
+
+	// Check action result
+	if (CDR_List.ActionResult is EmptyResult) { // Terminate page
+		return;
+	}
+
+	// Layout
+	Layout = "_Layout";
+
+	// Local variables (Temp data)
+	#pragma warning disable 168
+	string sqlWrk, filterWrk, whereWrk, curVal;
+	List<Dictionary<string, object>> rswrk;
+	string[] arWrk;
+	List<object> listWrk;
+	Func<string> lookupFilter;
+	#pragma warning restore 168
+}
+@if (!CDR_List.IsExport()) {
+<script>
+var fCDRlist, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "list";
+	fCDRlist = currentForm = new ew.Form("fCDRlist", "list");
+	fCDRlist.formKeyCountName = '@(CDR_List.FormKeyCountName)';
+	loadjs.done("fCDRlist");
+});
+var fCDRlistsrch;
+loadjs.ready("head", function() {
+
+	// Form object for search
+	fCDRlistsrch = currentSearchForm = new ew.Form("fCDRlistsrch");
+
+	// Dynamic selection lists
+	// Filters
+
+	fCDRlistsrch.filterList = @Html.Raw(await CDR_List.GetFilterList());
+	loadjs.done("fCDRlistsrch");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+}
+@if (!CDR_List.IsExport()) {
+<div class="btn-toolbar ew-toolbar">
+@if (CDR_List.TotalRecords > 0 && CDR_List.ExportOptions.Visible) {
+	CDR_List.ExportOptions.Render("body");
+}
+@if (CDR_List.ImportOptions.Visible) {
+	CDR_List.ImportOptions.Render("body");
+}
+@if (CDR_List.SearchOptions.Visible) {
+	CDR_List.SearchOptions.Render("body");
+}
+@if (CDR_List.FilterOptions.Visible) {
+	CDR_List.FilterOptions.Render("body");
+}
+<div class="clearfix"></div>
+</div>
+}
+@{ CDR_List.RenderOtherOptions(); }
+@if (!CDR_List.IsExport() && Empty(CDR.CurrentAction)) { @* Show search form (begin) *@
+<form name="fCDRlistsrch" id="fCDRlistsrch" class="form-inline ew-form ew-ext-search-form" action="@AppPath(CurrentPageName())">
+<div id="fCDRlistsrch-search-panel" class="@(CDR_List.SearchPanelClass)"><!-- .ew-search-panel -->
+<input type="hidden" name="cmd" value="search">
+	<div class="ew-extended-search">
+<div id="xsr_@(CDR_List.SearchRowCount + 1)" class="ew-row d-sm-flex">
+	<div class="ew-quick-search input-group">
+		<input type="text" name="@(Config.TableBasicSearch)" id="@(Config.TableBasicSearch)" class="form-control" value="@Html.Raw(HtmlEncode(CDR_List.BasicSearch.SessionKeyword))" placeholder="@(HtmlEncode(Language.Phrase("Search")))">
+		<input type="hidden" name="@(Config.TableBasicSearchType)" id="@(Config.TableBasicSearchType)" value="@(HtmlEncode(CDR_List.BasicSearch.SessionType))">
+		<div class="input-group-append">
+			<button class="btn btn-primary" name="btn-submit" id="btn-submit" type="submit">@Html.Raw(Language.Phrase("SearchBtn"))</button>
+			<button type="button" data-toggle="dropdown" class="btn btn-primary dropdown-toggle dropdown-toggle-split" aria-haspopup="true" aria-expanded="false"><span id="searchtype">@Html.Raw(CDR_List.BasicSearch.TypeNameShort)</span></button>
+			<div class="dropdown-menu dropdown-menu-right">
+				<a class="dropdown-item@((CDR_List.BasicSearch.SessionType == "") ? " active" : "")" href="#" onclick="return ew.setSearchType(this);">@Html.Raw(Language.Phrase("QuickSearchAuto"))</a>
+				<a class="dropdown-item@((CDR_List.BasicSearch.SessionType == "=") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, '=');">@Html.Raw(Language.Phrase("QuickSearchExact"))</a>
+				<a class="dropdown-item@((CDR_List.BasicSearch.SessionType == "AND") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'AND');">@Html.Raw(Language.Phrase("QuickSearchAll"))</a>
+				<a class="dropdown-item@((CDR_List.BasicSearch.SessionType == "OR") ? " active" : "")" href="#" onclick="return ew.setSearchType(this, 'OR');">@Html.Raw(Language.Phrase("QuickSearchAny"))</a>
+			</div>
+		</div>
+	</div>
+</div>
+	</div><!-- /.ew-extended-search -->
+</div><!-- /.ew-search-panel -->
+</form>
+} @* Show search form (end) *@
+@CDR_List.ShowPageHeader()
+@CDR_List.ShowMessages()
+@if (CDR_List.TotalRecords > 0 || !Empty(CDR.CurrentAction)) {
+<div class="card ew-card ew-grid@(CDR_List.IsAddOrEdit ? " ew-grid-add-edit" : "") CDR">
+<form name="fCDRlist" id="fCDRlist" class="form-inline ew-form ew-list-form" action="@AppPath(CurrentPageName())" method="post">
+@if (CDR_List.CheckToken) {
+	@Html.AntiForgeryToken()
+}
+<div id="gmp_CDR" class="@ResponsiveTableClass() card-body ew-grid-middle-panel">
+@if (CDR_List.TotalRecords > 0 || CDR_List.IsGridEdit) {
+<table id="tbl_CDRlist" class="table ew-table"><!-- .ew-table -->
+<thead>
+	<tr class="ew-table-header">
+@{
+
+	// Header row
+	CDR.RowType = Config.RowTypeHeader;
+
+	// Render list options
+	await CDR_List.RenderListOptions();
+
+	// Render list options (header, left)
+	CDR_List.ListOptions.Render("header", "left");
+}
+@if (CDR_List.caller_id.Visible) { // CDR_List.caller_id.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.caller_id) == "") {
+		<th data-name="caller_id" class="@(CDR_List.caller_id.HeaderCellClass)"><div id="elh_CDR_caller_id" class="CDR_caller_id"><div class="ew-table-header-caption">@Html.Raw(CDR_List.caller_id.Caption)</div></div></th>
+	} else {
+		<th data-name="caller_id" class="@(CDR_List.caller_id.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.caller_id))', 1);"><div id="elh_CDR_caller_id" class="CDR_caller_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.caller_id.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.caller_id.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.caller_id.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.caller_id.Visible (end) *@
+@if (CDR_List.recipient.Visible) { // CDR_List.recipient.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.recipient) == "") {
+		<th data-name="recipient" class="@(CDR_List.recipient.HeaderCellClass)"><div id="elh_CDR_recipient" class="CDR_recipient"><div class="ew-table-header-caption">@Html.Raw(CDR_List.recipient.Caption)</div></div></th>
+	} else {
+		<th data-name="recipient" class="@(CDR_List.recipient.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.recipient))', 1);"><div id="elh_CDR_recipient" class="CDR_recipient">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.recipient.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.recipient.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.recipient.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.recipient.Visible (end) *@
+@if (CDR_List.call_date.Visible) { // CDR_List.call_date.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.call_date) == "") {
+		<th data-name="call_date" class="@(CDR_List.call_date.HeaderCellClass)"><div id="elh_CDR_call_date" class="CDR_call_date"><div class="ew-table-header-caption">@Html.Raw(CDR_List.call_date.Caption)</div></div></th>
+	} else {
+		<th data-name="call_date" class="@(CDR_List.call_date.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.call_date))', 1);"><div id="elh_CDR_call_date" class="CDR_call_date">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.call_date.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.call_date.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.call_date.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.call_date.Visible (end) *@
+@if (CDR_List.end_time.Visible) { // CDR_List.end_time.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.end_time) == "") {
+		<th data-name="end_time" class="@(CDR_List.end_time.HeaderCellClass)"><div id="elh_CDR_end_time" class="CDR_end_time"><div class="ew-table-header-caption">@Html.Raw(CDR_List.end_time.Caption)</div></div></th>
+	} else {
+		<th data-name="end_time" class="@(CDR_List.end_time.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.end_time))', 1);"><div id="elh_CDR_end_time" class="CDR_end_time">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.end_time.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.end_time.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.end_time.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.end_time.Visible (end) *@
+@if (CDR_List.duration.Visible) { // CDR_List.duration.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.duration) == "") {
+		<th data-name="duration" class="@(CDR_List.duration.HeaderCellClass)"><div id="elh_CDR_duration" class="CDR_duration"><div class="ew-table-header-caption">@Html.Raw(CDR_List.duration.Caption)</div></div></th>
+	} else {
+		<th data-name="duration" class="@(CDR_List.duration.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.duration))', 1);"><div id="elh_CDR_duration" class="CDR_duration">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.duration.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.duration.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.duration.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.duration.Visible (end) *@
+@if (CDR_List.cost.Visible) { // CDR_List.cost.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.cost) == "") {
+		<th data-name="cost" class="@(CDR_List.cost.HeaderCellClass)"><div id="elh_CDR_cost" class="CDR_cost"><div class="ew-table-header-caption">@Html.Raw(CDR_List.cost.Caption)</div></div></th>
+	} else {
+		<th data-name="cost" class="@(CDR_List.cost.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.cost))', 1);"><div id="elh_CDR_cost" class="CDR_cost">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.cost.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.cost.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.cost.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.cost.Visible (end) *@
+@if (CDR_List.reference.Visible) { // CDR_List.reference.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.reference) == "") {
+		<th data-name="reference" class="@(CDR_List.reference.HeaderCellClass)"><div id="elh_CDR_reference" class="CDR_reference"><div class="ew-table-header-caption">@Html.Raw(CDR_List.reference.Caption)</div></div></th>
+	} else {
+		<th data-name="reference" class="@(CDR_List.reference.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.reference))', 1);"><div id="elh_CDR_reference" class="CDR_reference">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.reference.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.reference.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.reference.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.reference.Visible (end) *@
+@if (CDR_List.currency.Visible) { // CDR_List.currency.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.currency) == "") {
+		<th data-name="currency" class="@(CDR_List.currency.HeaderCellClass)"><div id="elh_CDR_currency" class="CDR_currency"><div class="ew-table-header-caption">@Html.Raw(CDR_List.currency.Caption)</div></div></th>
+	} else {
+		<th data-name="currency" class="@(CDR_List.currency.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.currency))', 1);"><div id="elh_CDR_currency" class="CDR_currency">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.currency.Caption)@Html.Raw(Language.Phrase("SrchLegend"))</span><span class="ew-table-header-sort">@if (CDR_List.currency.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.currency.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.currency.Visible (end) *@
+@if (CDR_List.id.Visible) { // CDR_List.id.Visible (begin)
+	if (CDR_List.SortUrl(CDR_List.id) == "") {
+		<th data-name="id" class="@(CDR_List.id.HeaderCellClass)"><div id="elh_CDR_id" class="CDR_id"><div class="ew-table-header-caption">@Html.Raw(CDR_List.id.Caption)</div></div></th>
+	} else {
+		<th data-name="id" class="@(CDR_List.id.HeaderCellClass)"><div class="ew-pointer" onclick="ew.sort(event, '@Html.Raw(CDR_List.SortUrl(CDR_List.id))', 1);"><div id="elh_CDR_id" class="CDR_id">
+			<div class="ew-table-header-btn"><span class="ew-table-header-caption">@Html.Raw(CDR_List.id.Caption)</span><span class="ew-table-header-sort">@if (CDR_List.id.Sort == "ASC") {<i class="fas fa-sort-up"></i>} else if (CDR_List.id.Sort == "DESC") {<i class="fas fa-sort-down"></i>}</span></div>
+		</div></div></th>
+	}
+} @* CDR_List.id.Visible (end) *@
+@{
+
+	// Render list options (header, right)
+	CDR_List.ListOptions.Render("header", "right");
+}
+	</tr>
+</thead>
+<tbody>
+@{ // Begin Code
+if (CDR_List.ExportAll && CDR_List.IsExport()) {
+	CDR_List.StopRecord = CDR_List.TotalRecords;
+} else {
+
+	// Set the last record to display
+	if (CDR_List.TotalRecords > CDR_List.StartRecord + CDR_List.DisplayRecords - 1) {
+		CDR_List.StopRecord = CDR_List.StartRecord + CDR_List.DisplayRecords - 1;
+	} else {
+		CDR_List.StopRecord = CDR_List.TotalRecords;
+	}
+}
+if (CDR_List.Recordset != null && CDR_List.Recordset.HasRows) {
+	if (!CDR_List.Connection.SelectOffset) { // DN
+		for (int i = 1; i <= CDR_List.StartRecord - 1; i++) { // Move to first record
+			if (await CDR_List.Recordset.ReadAsync()) {
+				CDR_List.RecordCount++;
+			}
+		}
+	} else {
+		CDR_List.RecordCount = CDR_List.StartRecord - 1;
+	}
+} else if (!CDR_List.AllowAddDeleteRow && CDR_List.StopRecord == 0) {
+	CDR_List.StopRecord = CDR_List.GridAddRowCount;
+}
+
+// Initialize aggregate
+CDR.RowType = Config.RowTypeAggregateInit;
+CDR_List.ResetAttributes();
+await CDR_List.RenderRow();
+
+// Output data rows
+bool eof = (CDR_List.Recordset == null); // DN
+while (CDR_List.RecordCount < CDR_List.StopRecord) { // Begin While
+	if (!CDR_List.IsGridAdd && !eof) { // DN
+		eof = !await CDR_List.Recordset.ReadAsync();
+	}
+	CDR_List.RecordCount++;
+	if (CDR_List.RecordCount >= CDR_List.StartRecord) {
+		CDR_List.RowCount++;
+
+		// Set up key count
+		CDR_List.KeyCount = ConvertToInt(CDR_List.RowIndex);
+
+		// Init row class and style
+		CDR_List.ResetAttributes();
+		CDR_List.CssClass = "";
+		if (CDR_List.IsGridAdd) {
+		} else {
+			await CDR_List.LoadRowValues(CDR_List.Recordset); // Load row values
+		}
+		CDR.RowType = Config.RowTypeView; // Render view
+
+		// Set up row id / data-rowindex
+		CDR_List.RowAttrs.Add("data-rowindex", Convert.ToString(CDR_List.RowCount));
+		CDR_List.RowAttrs.Add("id", "r" + Convert.ToString(CDR_List.RowCount) + "_CDR");
+		CDR_List.RowAttrs.Add("data-rowtype", Convert.ToString(CDR_List.RowType));
+
+		// Render row
+		await CDR_List.RenderRow();
+
+		// Render list options
+		await CDR_List.RenderListOptions();
+	@:<tr @Html.Raw(CDR.RowAttributes)>
+	@* Render list options (body, left) *@
+	@CDR_List.ListOptions.RenderBody("left", CDR_List.RowCount)
+	if (CDR_List.caller_id.Visible) { // CDR_List.caller_id.Visible (begin)
+		<td data-name="caller_id" @Html.Raw(CDR_List.caller_id.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_caller_id">
+<span @Html.Raw(CDR_List.caller_id.ViewAttributes)>@Html.Raw(CDR_List.caller_id.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.caller_id.Visible (end) *@
+	if (CDR_List.recipient.Visible) { // CDR_List.recipient.Visible (begin)
+		<td data-name="recipient" @Html.Raw(CDR_List.recipient.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_recipient">
+<span @Html.Raw(CDR_List.recipient.ViewAttributes)>@Html.Raw(CDR_List.recipient.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.recipient.Visible (end) *@
+	if (CDR_List.call_date.Visible) { // CDR_List.call_date.Visible (begin)
+		<td data-name="call_date" @Html.Raw(CDR_List.call_date.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_call_date">
+<span @Html.Raw(CDR_List.call_date.ViewAttributes)>@Html.Raw(CDR_List.call_date.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.call_date.Visible (end) *@
+	if (CDR_List.end_time.Visible) { // CDR_List.end_time.Visible (begin)
+		<td data-name="end_time" @Html.Raw(CDR_List.end_time.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_end_time">
+<span @Html.Raw(CDR_List.end_time.ViewAttributes)>@Html.Raw(CDR_List.end_time.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.end_time.Visible (end) *@
+	if (CDR_List.duration.Visible) { // CDR_List.duration.Visible (begin)
+		<td data-name="duration" @Html.Raw(CDR_List.duration.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_duration">
+<span @Html.Raw(CDR_List.duration.ViewAttributes)>@Html.Raw(CDR_List.duration.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.duration.Visible (end) *@
+	if (CDR_List.cost.Visible) { // CDR_List.cost.Visible (begin)
+		<td data-name="cost" @Html.Raw(CDR_List.cost.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_cost">
+<span @Html.Raw(CDR_List.cost.ViewAttributes)>@Html.Raw(CDR_List.cost.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.cost.Visible (end) *@
+	if (CDR_List.reference.Visible) { // CDR_List.reference.Visible (begin)
+		<td data-name="reference" @Html.Raw(CDR_List.reference.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_reference">
+<span @Html.Raw(CDR_List.reference.ViewAttributes)>@Html.Raw(CDR_List.reference.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.reference.Visible (end) *@
+	if (CDR_List.currency.Visible) { // CDR_List.currency.Visible (begin)
+		<td data-name="currency" @Html.Raw(CDR_List.currency.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_currency">
+<span @Html.Raw(CDR_List.currency.ViewAttributes)>@Html.Raw(CDR_List.currency.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.currency.Visible (end) *@
+	if (CDR_List.id.Visible) { // CDR_List.id.Visible (begin)
+		<td data-name="id" @Html.Raw(CDR_List.id.CellAttributes)>
+<span id="el@(CDR_List.RowCount)_CDR_id">
+<span @Html.Raw(CDR_List.id.ViewAttributes)>@Html.Raw(CDR_List.id.GetViewValue())</span>
+</span>
+</td>
+	} @* CDR_List.id.Visible (end) *@
+	@* Render list options (body, right) *@
+	@CDR_List.ListOptions.RenderBody("right", CDR_List.RowCount)
+	@:</tr>
+	} @* End if *@
+} @* End While *@
+} @* End Code *@
+</tbody>
+</table><!-- /.ew-table -->
+} @* End If TotalRecords > 0 *@
+</div><!-- /.ew-grid-middle-panel -->
+@if (Empty(CDR.CurrentAction)) {
+<input type="hidden" name="action" id="action" value="">
+}
+</form><!-- /.ew-list-form -->
+@{ CDR_List.CloseRecordset(); }
+@if (!CDR_List.IsExport()) {
+<div class="card-footer ew-grid-lower-panel">
+@if (!CDR_List.IsGridAdd) {
+<form name="ew-pager-form" class="form-inline ew-form ew-pager-form" action="@AppPath(CurrentPageName())">
+@Html.Raw(CDR_List.Pager.Render())
+</form>
+}
+<div class="ew-list-other-options">
+@CDR_List.OtherOptions.RenderBody("bottom")
+</div>
+<div class="clearfix"></div>
+</div>
+}
+</div><!-- /.ew-grid -->
+}
+@if (CDR_List.TotalRecords <= 0 && Empty(CDR.CurrentAction)) { // Show other options
+<div class="ew-list-other-options">
+@CDR_List.OtherOptions.ForEach(opt => opt.ButtonClass = "").RenderBody()
+</div>
+<div class="clearfix"></div>
+}
+@CDR_List.ShowPageFooter()
+@ShowDebugMessage()
+@ElapsedTime()
+@if (!CDR_List.IsExport()) {
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// document.write("page loaded");
+
+});
+</script>
+}

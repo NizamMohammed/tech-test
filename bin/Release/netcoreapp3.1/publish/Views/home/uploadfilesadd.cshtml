@@ -1,0 +1,155 @@
+@{
+
+	// View
+	View = this;
+	SetClientVar("login", LoginStatus);
+
+	// Global Page Rendering event
+	Page_Rendering();
+
+	// Page Render event
+	UploadFiles_Add.Page_Render();
+
+	// Check action result
+	if (UploadFiles_Add.ActionResult is EmptyResult) { // Terminate page
+		return;
+	}
+
+	// Layout
+	Layout = "_Layout";
+
+	// Local variables (Temp data)
+	#pragma warning disable 168
+	string sqlWrk, filterWrk, whereWrk, curVal;
+	List<Dictionary<string, object>> rswrk;
+	string[] arWrk;
+	List<object> listWrk;
+	Func<string> lookupFilter;
+	#pragma warning restore 168
+}
+<script>
+var fUploadFilesadd, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "add";
+	fUploadFilesadd = currentForm = new ew.Form("fUploadFilesadd", "add");
+
+	// Validate form
+	fUploadFilesadd.validate = function() {
+		if (!this.validateRequired)
+			return true; // Ignore validation
+		var $ = jQuery, fobj = this.getForm(), $fobj = $(fobj);
+		if ($fobj.find("#confirm").val() == "F")
+			return true;
+		var elm, felm, uelm, addcnt = 0;
+		var $k = $fobj.find("#" + this.formKeyCountName); // Get key_count
+		var rowcnt = ($k[0]) ? parseInt($k.val(), 10) : 1;
+		var startcnt = (rowcnt == 0) ? 0 : 1; // Check rowcnt == 0 => Inline-Add
+		var gridinsert = ["insert", "gridinsert"].includes($fobj.find("#action").val()) && $k[0];
+		for (var i = startcnt; i <= rowcnt; i++) {
+			var infix = ($k[0]) ? String(i) : "";
+			$fobj.data("rowindex", infix);
+			@if (UploadFiles_Add.FileName.Required) {
+				<text>
+				felm = this.getElements("x" + infix + "_FileName");
+				elm = this.getElements("fn_x" + infix + "_FileName");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "@Html.Raw(JsEncode(Convert.ToString(UploadFiles_Add.FileName.RequiredErrorMessage).Replace("%s", UploadFiles_Add.FileName.Caption)))");
+				</text>
+			}
+
+				// Call Form_CustomValidate event
+				if (!this.Form_CustomValidate(fobj))
+					return false;
+		}
+
+		// Process detail forms
+		var dfs = $fobj.find("input[name='detailpage']").get();
+		for (var i = 0; i < dfs.length; i++) {
+			var df = dfs[i], val = df.value;
+			if (val && ew.forms[val])
+				if (!ew.forms[val].validate())
+					return false;
+		}
+		return true;
+	}
+
+	// Form_CustomValidate
+	fUploadFilesadd.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS LINE!
+
+		// Your custom validation code here, return false if invalid.
+		return true;
+	}
+
+	// Use JavaScript validation or not
+	fUploadFilesadd.validateRequired = @(Config.ClientValidate ? "true" : "false");
+
+	// Dynamic selection lists
+	loadjs.done("fUploadFilesadd");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+@UploadFiles_Add.ShowPageHeader()
+@UploadFiles_Add.ShowMessages()
+<form name="fUploadFilesadd" id="fUploadFilesadd" class="@(UploadFiles_Add.FormClassName)" action="@AppPath(CurrentPageName())" method="post">
+@if (UploadFiles_Add.CheckToken) {
+	@Html.AntiForgeryToken()
+}
+<input type="hidden" name="action" id="action" value="insert">
+<input type="hidden" name="modal" value="@ConvertToInt(UploadFiles_Add.IsModal)">
+<div class="ew-add-div"><!-- page* -->
+@if (UploadFiles_Add.FileName.Visible) { // UploadFiles_Add.FileName.Visible (begin)
+	<div id="r_FileName" class="form-group row">
+		<label id="elh_UploadFiles_FileName" class="@(UploadFiles_Add.LeftColumnClass)">@Html.Raw(UploadFiles_Add.FileName.Caption)@Html.Raw(UploadFiles_Add.FileName.Required ? Language.Phrase("FieldRequiredIndicator") : "")</label>
+		<div class="@(UploadFiles_Add.RightColumnClass)"><div @Html.Raw(UploadFiles_Add.FileName.CellAttributes)>
+<span id="el_UploadFiles_FileName">
+<div id="fd_x_FileName">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="@(UploadFiles_Add.FileName.Title)" data-table="UploadFiles" data-field="x_FileName" name="x_FileName" id="x_FileName" lang="@(CurrentLanguageID)" multiple="multiple" @Html.Raw(UploadFiles_Add.FileName.EditAttributes)@((UploadFiles_Add.FileName.ReadOnly || UploadFiles_Add.FileName.Disabled) ? " disabled" : "")>
+		<label class="custom-file-label ew-file-label" for="x_FileName">@Html.Raw(Language.Phrase("ChooseFiles"))</label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_FileName" id= "fn_x_FileName" value="@(UploadFiles_Add.FileName.Upload.FileName)">
+<input type="hidden" name="fa_x_FileName" id= "fa_x_FileName" value="0">
+<input type="hidden" name="fs_x_FileName" id= "fs_x_FileName" value="500">
+<input type="hidden" name="fx_x_FileName" id= "fx_x_FileName" value="@(UploadFiles_Add.FileName.UploadAllowedFileExtensions)">
+<input type="hidden" name="fm_x_FileName" id= "fm_x_FileName" value="@(UploadFiles_Add.FileName.UploadMaxFileSize)">
+<input type="hidden" name="fc_x_FileName" id= "fc_x_FileName" value="@(UploadFiles_Add.FileName.UploadMaxFileCount)">
+</div>
+<table id="ft_x_FileName" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+@Html.Raw(UploadFiles_Add.FileName.CustomMsg)</div></div>
+	</div>
+} @* UploadFiles_Add.FileName.Visible (end) *@
+</div><!-- /page* -->
+@{ UploadFiles_Add.CloseRecordset(); }
+@if (!UploadFiles_Add.IsModal) {
+@:<div class="form-group row"><!-- buttons .form-group -->
+	@:<div class="@(UploadFiles_Add.OffsetColumnClass)"><!-- buttons offset -->
+<button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit">@Html.Raw(Language.Phrase("AddBtn"))</button>
+<button class="btn btn-default ew-btn" name="btn-cancel" id="btn-cancel" type="button" data-href="@AppPath(UploadFiles_Add.ReturnUrl)"> @Html.Raw(Language.Phrase("CancelBtn"))</button>
+	@:</div><!-- /buttons offset -->
+@:</div><!-- /buttons .form-group -->
+}
+</form>
+@UploadFiles_Add.ShowPageFooter()
+@ShowDebugMessage()
+@ElapsedTime()
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// document.write("page loaded");
+
+});
+</script>

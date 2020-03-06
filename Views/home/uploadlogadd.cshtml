@@ -1,0 +1,219 @@
+@{
+
+	// View
+	View = this;
+	SetClientVar("login", LoginStatus);
+
+	// Global Page Rendering event
+	Page_Rendering();
+
+	// Page Render event
+	UploadLog_Add.Page_Render();
+
+	// Check action result
+	if (UploadLog_Add.ActionResult is EmptyResult) { // Terminate page
+		return;
+	}
+
+	// Layout
+	Layout = "_Layout";
+
+	// Local variables (Temp data)
+	#pragma warning disable 168
+	string sqlWrk, filterWrk, whereWrk, curVal;
+	List<Dictionary<string, object>> rswrk;
+	string[] arWrk;
+	List<object> listWrk;
+	Func<string> lookupFilter;
+	#pragma warning restore 168
+}
+<script>
+var fUploadLogadd, currentPageID;
+loadjs.ready("head", function() {
+
+	// Form object
+	currentPageID = ew.PAGE_ID = "add";
+	fUploadLogadd = currentForm = new ew.Form("fUploadLogadd", "add");
+
+	// Validate form
+	fUploadLogadd.validate = function() {
+		if (!this.validateRequired)
+			return true; // Ignore validation
+		var $ = jQuery, fobj = this.getForm(), $fobj = $(fobj);
+		if ($fobj.find("#confirm").val() == "F")
+			return true;
+		var elm, felm, uelm, addcnt = 0;
+		var $k = $fobj.find("#" + this.formKeyCountName); // Get key_count
+		var rowcnt = ($k[0]) ? parseInt($k.val(), 10) : 1;
+		var startcnt = (rowcnt == 0) ? 0 : 1; // Check rowcnt == 0 => Inline-Add
+		var gridinsert = ["insert", "gridinsert"].includes($fobj.find("#action").val()) && $k[0];
+		for (var i = startcnt; i <= rowcnt; i++) {
+			var infix = ($k[0]) ? String(i) : "";
+			$fobj.data("rowindex", infix);
+			@if (UploadLog_Add.FileName.Required) {
+				<text>
+				felm = this.getElements("x" + infix + "_FileName");
+				elm = this.getElements("fn_x" + infix + "_FileName");
+				if (felm && elm && !ew.hasValue(elm))
+					return this.onError(felm, "@Html.Raw(JsEncode(Convert.ToString(UploadLog_Add.FileName.RequiredErrorMessage).Replace("%s", UploadLog_Add.FileName.Caption)))");
+				</text>
+			}
+			@if (UploadLog_Add.FileSize.Required) {
+				<text>
+				elm = this.getElements("x" + infix + "_FileSize");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "@Html.Raw(JsEncode(Convert.ToString(UploadLog_Add.FileSize.RequiredErrorMessage).Replace("%s", UploadLog_Add.FileSize.Caption)))");
+				</text>
+			}
+				elm = this.getElements("x" + infix + "_FileSize");
+				if (elm && !ew.checkInteger(elm.value))
+					return this.onError(elm, "@(JsEncode(UploadLog_Add.FileSize.ErrorMessage))");
+			@if (UploadLog_Add.FileType.Required) {
+				<text>
+				elm = this.getElements("x" + infix + "_FileType");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "@Html.Raw(JsEncode(Convert.ToString(UploadLog_Add.FileType.RequiredErrorMessage).Replace("%s", UploadLog_Add.FileType.Caption)))");
+				</text>
+			}
+			@if (UploadLog_Add.DateUploaded.Required) {
+				<text>
+				elm = this.getElements("x" + infix + "_DateUploaded");
+				if (elm && !ew.isHidden(elm) && !ew.hasValue(elm))
+					return this.onError(elm, "@Html.Raw(JsEncode(Convert.ToString(UploadLog_Add.DateUploaded.RequiredErrorMessage).Replace("%s", UploadLog_Add.DateUploaded.Caption)))");
+				</text>
+			}
+				elm = this.getElements("x" + infix + "_DateUploaded");
+				if (elm && !ew.checkDateDef(elm.value))
+					return this.onError(elm, "@(JsEncode(UploadLog_Add.DateUploaded.ErrorMessage))");
+
+				// Call Form_CustomValidate event
+				if (!this.Form_CustomValidate(fobj))
+					return false;
+		}
+
+		// Process detail forms
+		var dfs = $fobj.find("input[name='detailpage']").get();
+		for (var i = 0; i < dfs.length; i++) {
+			var df = dfs[i], val = df.value;
+			if (val && ew.forms[val])
+				if (!ew.forms[val].validate())
+					return false;
+		}
+		return true;
+	}
+
+	// Form_CustomValidate
+	fUploadLogadd.Form_CustomValidate = function(fobj) { // DO NOT CHANGE THIS LINE!
+
+		// Your custom validation code here, return false if invalid.
+		return true;
+	}
+
+	// Use JavaScript validation or not
+	fUploadLogadd.validateRequired = @(Config.ClientValidate ? "true" : "false");
+
+	// Dynamic selection lists
+	loadjs.done("fUploadLogadd");
+});
+</script>
+<script>
+loadjs.ready("head", function() {
+
+	// Client script
+	// Write your client script here, no need to add script tags.
+
+});
+</script>
+@UploadLog_Add.ShowPageHeader()
+@UploadLog_Add.ShowMessages()
+<form name="fUploadLogadd" id="fUploadLogadd" class="@(UploadLog_Add.FormClassName)" action="@AppPath(CurrentPageName())" method="post">
+@if (UploadLog_Add.CheckToken) {
+	@Html.AntiForgeryToken()
+}
+<input type="hidden" name="action" id="action" value="insert">
+<input type="hidden" name="modal" value="@ConvertToInt(UploadLog_Add.IsModal)">
+<div class="ew-add-div"><!-- page* -->
+@if (UploadLog_Add.FileName.Visible) { // UploadLog_Add.FileName.Visible (begin)
+	<div id="r_FileName" class="form-group row">
+		<label id="elh_UploadLog_FileName" class="@(UploadLog_Add.LeftColumnClass)">@Html.Raw(UploadLog_Add.FileName.Caption)@Html.Raw(UploadLog_Add.FileName.Required ? Language.Phrase("FieldRequiredIndicator") : "")</label>
+		<div class="@(UploadLog_Add.RightColumnClass)"><div @Html.Raw(UploadLog_Add.FileName.CellAttributes)>
+<span id="el_UploadLog_FileName">
+<div id="fd_x_FileName">
+<div class="input-group">
+	<div class="custom-file">
+		<input type="file" class="custom-file-input" title="@(UploadLog_Add.FileName.Title)" data-table="UploadLog" data-field="x_FileName" name="x_FileName" id="x_FileName" lang="@(CurrentLanguageID)" multiple="multiple" @Html.Raw(UploadLog_Add.FileName.EditAttributes)@((UploadLog_Add.FileName.ReadOnly || UploadLog_Add.FileName.Disabled) ? " disabled" : "")>
+		<label class="custom-file-label ew-file-label" for="x_FileName">@Html.Raw(Language.Phrase("ChooseFiles"))</label>
+	</div>
+</div>
+<input type="hidden" name="fn_x_FileName" id= "fn_x_FileName" value="@(UploadLog_Add.FileName.Upload.FileName)">
+<input type="hidden" name="fa_x_FileName" id= "fa_x_FileName" value="0">
+<input type="hidden" name="fs_x_FileName" id= "fs_x_FileName" value="500">
+<input type="hidden" name="fx_x_FileName" id= "fx_x_FileName" value="@(UploadLog_Add.FileName.UploadAllowedFileExtensions)">
+<input type="hidden" name="fm_x_FileName" id= "fm_x_FileName" value="@(UploadLog_Add.FileName.UploadMaxFileSize)">
+<input type="hidden" name="fc_x_FileName" id= "fc_x_FileName" value="@(UploadLog_Add.FileName.UploadMaxFileCount)">
+</div>
+<table id="ft_x_FileName" class="table table-sm float-left ew-upload-table"><tbody class="files"></tbody></table>
+</span>
+@Html.Raw(UploadLog_Add.FileName.CustomMsg)</div></div>
+	</div>
+} @* UploadLog_Add.FileName.Visible (end) *@
+@if (UploadLog_Add.FileSize.Visible) { // UploadLog_Add.FileSize.Visible (begin)
+	<div id="r_FileSize" class="form-group row">
+		<label id="elh_UploadLog_FileSize" for="x_FileSize" class="@(UploadLog_Add.LeftColumnClass)">@Html.Raw(UploadLog_Add.FileSize.Caption)@Html.Raw(UploadLog_Add.FileSize.Required ? Language.Phrase("FieldRequiredIndicator") : "")</label>
+		<div class="@(UploadLog_Add.RightColumnClass)"><div @Html.Raw(UploadLog_Add.FileSize.CellAttributes)>
+<span id="el_UploadLog_FileSize">
+<input type="text" data-table="UploadLog" data-field="x_FileSize" name="x_FileSize" id="x_FileSize" size="30" maxlength="8" placeholder="@Html.Raw(HtmlEncode(UploadLog_Add.FileSize.PlaceHolder))" value="@(UploadLog_Add.FileSize.EditValue)" @Html.Raw(UploadLog_Add.FileSize.EditAttributes)>
+</span>
+@Html.Raw(UploadLog_Add.FileSize.CustomMsg)</div></div>
+	</div>
+} @* UploadLog_Add.FileSize.Visible (end) *@
+@if (UploadLog_Add.FileType.Visible) { // UploadLog_Add.FileType.Visible (begin)
+	<div id="r_FileType" class="form-group row">
+		<label id="elh_UploadLog_FileType" for="x_FileType" class="@(UploadLog_Add.LeftColumnClass)">@Html.Raw(UploadLog_Add.FileType.Caption)@Html.Raw(UploadLog_Add.FileType.Required ? Language.Phrase("FieldRequiredIndicator") : "")</label>
+		<div class="@(UploadLog_Add.RightColumnClass)"><div @Html.Raw(UploadLog_Add.FileType.CellAttributes)>
+<span id="el_UploadLog_FileType">
+<input type="text" data-table="UploadLog" data-field="x_FileType" name="x_FileType" id="x_FileType" size="30" maxlength="50" placeholder="@Html.Raw(HtmlEncode(UploadLog_Add.FileType.PlaceHolder))" value="@(UploadLog_Add.FileType.EditValue)" @Html.Raw(UploadLog_Add.FileType.EditAttributes)>
+</span>
+@Html.Raw(UploadLog_Add.FileType.CustomMsg)</div></div>
+	</div>
+} @* UploadLog_Add.FileType.Visible (end) *@
+@if (UploadLog_Add.DateUploaded.Visible) { // UploadLog_Add.DateUploaded.Visible (begin)
+	<div id="r_DateUploaded" class="form-group row">
+		<label id="elh_UploadLog_DateUploaded" for="x_DateUploaded" class="@(UploadLog_Add.LeftColumnClass)">@Html.Raw(UploadLog_Add.DateUploaded.Caption)@Html.Raw(UploadLog_Add.DateUploaded.Required ? Language.Phrase("FieldRequiredIndicator") : "")</label>
+		<div class="@(UploadLog_Add.RightColumnClass)"><div @Html.Raw(UploadLog_Add.DateUploaded.CellAttributes)>
+<span id="el_UploadLog_DateUploaded">
+<input type="text" data-table="UploadLog" data-field="x_DateUploaded" name="x_DateUploaded" id="x_DateUploaded" maxlength="8" placeholder="@Html.Raw(HtmlEncode(UploadLog_Add.DateUploaded.PlaceHolder))" value="@(UploadLog_Add.DateUploaded.EditValue)" @Html.Raw(UploadLog_Add.DateUploaded.EditAttributes)>
+@if (!UploadLog_Add.DateUploaded.ReadOnly && !UploadLog_Add.DateUploaded.Disabled && !UploadLog_Add.DateUploaded.EditAttrs.ContainsKey("readonly") && !UploadLog_Add.DateUploaded.EditAttrs.ContainsKey("disabled")) {
+<script>
+loadjs.ready(["fUploadLogadd", "datetimepicker"], function() {
+	ew.createDateTimePicker("fUploadLogadd", "x_DateUploaded", {"ignoreReadonly":true,"useCurrent":false,"format":0});
+});
+</script>
+}
+</span>
+@Html.Raw(UploadLog_Add.DateUploaded.CustomMsg)</div></div>
+	</div>
+} @* UploadLog_Add.DateUploaded.Visible (end) *@
+</div><!-- /page* -->
+@{ UploadLog_Add.CloseRecordset(); }
+@if (!UploadLog_Add.IsModal) {
+@:<div class="form-group row"><!-- buttons .form-group -->
+	@:<div class="@(UploadLog_Add.OffsetColumnClass)"><!-- buttons offset -->
+<button class="btn btn-primary ew-btn" name="btn-action" id="btn-action" type="submit">@Html.Raw(Language.Phrase("AddBtn"))</button>
+<button class="btn btn-default ew-btn" name="btn-cancel" id="btn-cancel" type="button" data-href="@AppPath(UploadLog_Add.ReturnUrl)"> @Html.Raw(Language.Phrase("CancelBtn"))</button>
+	@:</div><!-- /buttons offset -->
+@:</div><!-- /buttons .form-group -->
+}
+</form>
+@UploadLog_Add.ShowPageFooter()
+@ShowDebugMessage()
+@ElapsedTime()
+<script>
+loadjs.ready("load", function() {
+
+	// Startup script
+	// Write your table-specific startup script here
+	// document.write("page loaded");
+
+});
+</script>
